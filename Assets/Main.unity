@@ -254,6 +254,7 @@ GameObject:
   - 81: {fileID: 821748883}
   - 114: {fileID: 821748887}
   - 114: {fileID: 821748888}
+  - 114: {fileID: 821748889}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -367,6 +368,23 @@ MonoBehaviour:
   _highQuality: 1
   _antiFlicker: 1
   _shader: {fileID: 4800000, guid: 5a711a01011934ebcb58ef5ad52159d6, type: 3}
+--- !u!114 &821748889
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 821748881}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d3c0b01ad228439a9d89134216071c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _screenWidth: 800
+  _screenHeight: 800
+  _antiAliasing: 1
+  _discardAlpha: 1
+  _renderMode: 2
+  _gammaShader: {fileID: 4800000, guid: 61221cb867c7a439fba6da3231ff64f7, type: 3}
 --- !u!1 &931637256
 GameObject:
   m_ObjectHideFlags: 0
