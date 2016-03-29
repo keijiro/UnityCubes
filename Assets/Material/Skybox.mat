@@ -101,7 +101,7 @@ Material:
       data:
         first:
           name: _Exposure
-        second: 2
+        second: 3
       data:
         first:
           name: _Glossiness

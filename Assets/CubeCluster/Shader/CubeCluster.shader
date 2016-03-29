@@ -4,10 +4,6 @@
     {
         _Color("", Color) = (1, 1, 1, 1)
         _MainTex("", 2D) = "white" {}
-
-        _Glossiness("", Range(0, 1)) = 0
-        [Gamma] _Metallic("", Range(0, 1)) = 0
-
         _BumpMap("", 2D) = "bump"{}
         _BumpScale("", Float) = 1
     }
@@ -24,10 +20,6 @@
 
         fixed4 _Color;
         sampler2D _MainTex;
-
-        half _Glossiness;
-        half _Metallic;
-
         sampler2D _BumpMap;
         half _BumpScale;
 

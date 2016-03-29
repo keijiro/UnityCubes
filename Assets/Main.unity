@@ -111,7 +111,7 @@ Light:
   serializedVersion: 6
   m_Type: 1
   m_Color: {r: 1, g: 0.9902637, b: 0.9117647, a: 1}
-  m_Intensity: 0.95
+  m_Intensity: 0.3
   m_Range: 10
   m_SpotAngle: 30
   m_CookieSize: 10
@@ -300,10 +300,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6363bba448bf64e60a763433f9ddf81b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _threshold: 0.8
+  _threshold: 1
   _softKnee: 0.5
-  _radius: 2.5
-  _intensity: 0.8
+  _radius: 3
+  _intensity: 0.6
   _highQuality: 1
   _antiFlicker: 1
   _shader: {fileID: 4800000, guid: 5a711a01011934ebcb58ef5ad52159d6, type: 3}
@@ -518,10 +518,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _color: {r: 1, g: 1, b: 1, a: 0}
   _mesh: {fileID: 11400000, guid: a4b2ab016fd8c4c6694c5ed8826f8316, type: 2}
-  _albedoTex: {fileID: 2800000, guid: 1085d6f82e40b31428079b25ebee7d74, type: 3}
-  _normalTex: {fileID: 2800000, guid: 22908ad6783998142a0597f6ea5fc501, type: 3}
-  _smoothness: 0.5
-  _metallic: 0.4
+  _metallicMap: {fileID: 2800000, guid: 1085d6f82e40b31428079b25ebee7d74, type: 3}
+  _normalMap: {fileID: 2800000, guid: 22908ad6783998142a0597f6ea5fc501, type: 3}
   _textureScale: 1
   _shader: {fileID: 4800000, guid: 343f08e6067e54be2a1c62cfb2015f2f, type: 3}
 --- !u!4 &1178461071
