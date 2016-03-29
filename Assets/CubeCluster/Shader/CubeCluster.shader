@@ -81,12 +81,14 @@
             return float4(axis * sn, cs);
         }
 
+        static const float kCycle = 5;
+
         void vert(inout appdata_full v)
         {
             float3 vpos = v.vertex.xyz;
             float3 uvw = v.texcoord1.xyz;
 
-            float ratio = pow(abs(sin(_Time.x * 4 + uvw.x * 0.4)), 2);
+            float ratio = pow(abs(sin(_Time.x * 4 + (uvw.x * 25 + uvw.y * 16 - uvw.z) * 0.04)), 2);
 
             v.color = saturate(1 - ratio * float4(3, 4.5, 5, 1)) * 2;
 
@@ -126,12 +128,12 @@
         {
             float2 uv = IN.uv_MainTex.xy;
 
-            fixed4 c = tex2D(_MainTex, uv) * _Color;
-            o.Albedo = c.rgb;
-            o.Alpha = c.a;
+            o.Albedo = _Color.rgb;
+            o.Alpha = _Color.a;
 
-            o.Metallic = _Metallic;
-            o.Smoothness = _Glossiness;
+            float4 mt = tex2D(_MainTex, uv);
+            o.Metallic = mt.r;
+            o.Smoothness = mt.a;
 
             fixed4 nrm = tex2D(_BumpMap, uv);
             o.Normal = UnpackScaleNormal(nrm, _BumpScale);
