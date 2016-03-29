@@ -111,7 +111,7 @@ Light:
   serializedVersion: 6
   m_Type: 1
   m_Color: {r: 1, g: 0.9902637, b: 0.9117647, a: 1}
-  m_Intensity: 0.8
+  m_Intensity: 0.95
   m_Range: 10
   m_SpotAngle: 30
   m_CookieSize: 10
@@ -521,7 +521,7 @@ MonoBehaviour:
   _albedoTex: {fileID: 2800000, guid: 50556f5921dbd4deb8098ee6e889ce99, type: 3}
   _normalTex: {fileID: 2800000, guid: ea9d3886025004f849c68e2e017226c7, type: 3}
   _smoothness: 0.5
-  _metallic: 0.5
+  _metallic: 0.4
   _textureScale: 0.18
   _shader: {fileID: 4800000, guid: 343f08e6067e54be2a1c62cfb2015f2f, type: 3}
 --- !u!4 &1178461071

@@ -86,12 +86,24 @@
             float3 vpos = v.vertex.xyz;
             float3 uvw = v.texcoord1.xyz;
 
-            float ratio = abs(sin(_Time.x * 5));
+            float ratio = pow(abs(sin(_Time.x * 4 + uvw.x * 0.4)), 2);
 
             v.color = saturate(1 - ratio * float4(3, 4.5, 5, 1)) * 2;
 
+            float2 r_uv = uvw.xy + uvw.z * 0.1;
+            float3 offs2 = float3(
+                sin(_Time.y * (1 + UVRand(r_uv))),
+                sin(_Time.y * (1 + UVRand(r_uv + 1))),
+                sin(_Time.y * (1 + UVRand(r_uv + 2)))
+            ) * 0.4;
+
             // base position
             float3 offs = _Size * 0.5 + uvw - 0.5;
+
+            offs *= 1 - pow(ratio, 3) * 0.4;
+
+            //offs = rotate_vector(offs, rotation_angle_axis(_Time.y, float3(0, 1, 0)));
+            offs = lerp(offs, offs2, ratio);
 
             // rotation
             float3 rnoise = uvw + float3(23.1, 38.4, 15.3);
