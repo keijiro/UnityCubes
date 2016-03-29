@@ -32,9 +32,9 @@
         };
 
         // PRNG
-        float UVRand(float2 uv)
+        float UVRand(float u, float v)
         {
-            return frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453);
+            return frac(sin(dot(float2(u, v), float2(12.9898, 78.233))) * 43758.5453);
         }
 
         // Quaternion multiplication
@@ -42,17 +42,17 @@
         float4 qmul(float4 q1, float4 q2)
         {
             return float4(
-                    q2.xyz * q1.w + q1.xyz * q2.w + cross(q1.xyz, q2.xyz),
-                    q1.w * q2.w - dot(q1.xyz, q2.xyz)
-                    );
+                q2.xyz * q1.w + q1.xyz * q2.w + cross(q1.xyz, q2.xyz),
+                q1.w * q2.w - dot(q1.xyz, q2.xyz)
+            );
         }
 
         // Uniformaly distributed points on a unit sphere
         // http://mathworld.wolfram.com/SpherePointPicking.html
-        float3 random_point_on_sphere(float2 uv)
+        float3 random_point_on_sphere(float seed1, float seed2)
         {
-            float u = UVRand(uv) * 2 - 1;
-            float theta = UVRand(uv + 0.333) * UNITY_PI * 2;
+            float u = UVRand(seed1, seed2) * 2 - 1;
+            float theta = UVRand(seed1 + 0.333, seed2) * UNITY_PI * 2;
             float u2 = sqrt(1 - u * u);
             return float3(u2 * cos(theta), u2 * sin(theta), u);
         }
@@ -73,13 +73,40 @@
             return float4(axis * sn, cs);
         }
 
-        static const float kCycle = 5;
+        static const float kCycle = 18;
+        static const float kTransition = 4;
 
         void vert(inout appdata_full v)
         {
             float3 vpos = v.vertex.xyz;
             float3 uvw = v.texcoord1.xyz;
+            float id = dot(uvw, float3(24.13, 5.87, 1)) / 30;
 
+            float time = frac(_Time.y / kCycle);  // base time
+            time *= 1 + kTransition * 2 / kCycle; // make transition margin
+            time -= id * kTransition / kCycle;    // bias with object id
+            time = saturate(time);                // clamp with 0-1
+
+            float dft1 = pow(1 - sin(time * UNITY_PI), 2);
+            float dft2 = pow(1 - sin(time * UNITY_PI), 9);
+
+            float3 offs = _Size * 0.5 + uvw - 0.5;
+            float scale = (dft2 + 1) / 2 * _Size;
+
+            float3 raxis = random_point_on_sphere(id, 0);
+            float angle = UVRand(id, 1) * 3 + 1;
+            float4 rot = rotation_angle_axis((1 - dft1) * angle, raxis);
+
+            float3 orbit = float3(UVRand(id, 2), UVRand(id, 3), UVRand(id, 4));
+            orbit = sin((orbit + 1) * (_Time.y + 13)) * 0.4;
+
+            offs = lerp(orbit, offs, dft1);
+
+            v.vertex.xyz = rotate_vector(vpos, rot) * scale + offs;
+            v.normal = rotate_vector(v.normal, rot);
+            v.color = dft2 * float4(3, 1.2, 1, 0);
+
+            /*
             float ratio = pow(abs(sin(_Time.x * 4 + (uvw.x * 25 + uvw.y * 16 - uvw.z) * 0.04)), 2);
 
             v.color = saturate(1 - ratio * float4(3, 4.5, 5, 1)) * 2;
@@ -114,6 +141,7 @@
 
             v.texcoord.xy = v.texcoord.xy * _TextureScale;
             v.texcoord.xy += float2(UVRand(uvw.xy + uvw.z), UVRand(uvw.yz + uvw.x));
+            */
         }
 
         void surf(Input IN, inout SurfaceOutputStandard o)
