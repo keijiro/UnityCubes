@@ -45,6 +45,7 @@ namespace UnityLogo
         #region Private members
 
         float[] _randomParams = new float[8];
+        Color _emissionColor;
         float _time;
 
         #endregion
@@ -55,6 +56,8 @@ namespace UnityLogo
         {
             for (var i = 0; i < 8; i++)
                 _randomParams[i] = Random.value > 0.66f ? 1 : 0;
+
+            _emissionColor = Color.HSVToRGB(Random.value, 0.5f, 1);
 
             _time = 0;
         }
@@ -86,6 +89,7 @@ namespace UnityLogo
             _material.SetTexture("_MainTex", _metallicMap);
             _material.SetTexture("_BumpMap", _normalMap);
             _material.SetFloat("_BumpScale", 1);
+            _material.SetColor("_Emission", _emissionColor);
 
             _material.SetFloat("_Size", 1.0f / _mesh.columnCount);
             _material.SetFloat("_TextureScale", _textureScale);

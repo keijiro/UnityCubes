@@ -6,6 +6,7 @@
         _MainTex("", 2D) = "white" {}
         _BumpMap("", 2D) = "bump"{}
         _BumpScale("", Float) = 1
+        _Emission("", Color) = (1, 1, 1, 1)
     }
     SubShader
     {
@@ -22,6 +23,7 @@
         sampler2D _MainTex;
         sampler2D _BumpMap;
         half _BumpScale;
+        half4 _Emission;
 
         float _Size;
         float _TextureScale;
@@ -151,7 +153,7 @@
             // apply modification
             v.vertex.xyz = rotate_vector(vpos, rot) * scale + offs;
             v.normal = rotate_vector(v.normal, rot);
-            v.color = dft2 * float4(3, 1.2, 1, 0);
+            v.color = dft2 * _Emission * 3;
 
             // texture coordnate
             v.texcoord.xy *= _TextureScale;
