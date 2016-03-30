@@ -6,6 +6,18 @@ namespace UnityLogo
     [ExecuteInEditMode]
     public class CubeClusterRenderer : MonoBehaviour
     {
+        #region Exposed properties
+
+        [SerializeField, Range(0, 1)]
+        float _phase;
+
+        [Space]
+
+        [SerializeField]
+        float _transition = 0.1f;
+
+        [Space]
+
         [SerializeField, ColorUsage(false)]
         Color _color;
 
@@ -21,24 +33,35 @@ namespace UnityLogo
         [SerializeField]
         float _textureScale = 1;
 
-        [SerializeField]
-        Shader _shader;
+        #endregion
 
+        #region Private resources
+
+        [SerializeField, HideInInspector] Shader _shader;
         Material _material;
 
-        Vector4 _switch1;
-        Vector4 _switch2;
+        #endregion
 
-        Vector4 RandomBinaryVector {
-            get {
-                return new Vector4(
-                    Random.value > 0.5f ? 1 : 0,
-                    Random.value > 0.5f ? 1 : 0,
-                    Random.value > 0.5f ? 1 : 0,
-                    Random.value > 0.5f ? 1 : 0
-                );
-            }
+        #region Private members
+
+        float[] _randomParams = new float[8];
+        float _time;
+
+        #endregion
+
+        #region Public methods
+
+        public void ResetParams()
+        {
+            for (var i = 0; i < 8; i++)
+                _randomParams[i] = Random.value > 0.66f ? 1 : 0;
+
+            _time = 0;
         }
+
+        #endregion
+
+        #region MonoBehaviour functions
 
         void OnEnable()
         {
@@ -52,31 +75,47 @@ namespace UnityLogo
             _material = null;
         }
 
-        IEnumerator Start()
+        void Start()
         {
-            while (true)
-            {
-                _switch1 = RandomBinaryVector;
-                _switch2 = RandomBinaryVector;
-                yield return new WaitForSeconds(18);
-            }
+            ResetParams();
         }
 
         void Update()
         {
-            _material.color = _color;
-            _material.SetFloat("_Size", 1.0f / _mesh.columnCount);
-            _material.mainTexture = _metallicMap;
+            _material.SetColor("_Color", _color);
+            _material.SetTexture("_MainTex", _metallicMap);
             _material.SetTexture("_BumpMap", _normalMap);
+            _material.SetFloat("_BumpScale", 1);
+
+            _material.SetFloat("_Size", 1.0f / _mesh.columnCount);
             _material.SetFloat("_TextureScale", _textureScale);
 
-            _material.SetVector("_Switch1", _switch1);
-            _material.SetVector("_Switch2", _switch2);
+            _material.SetFloat("_RTime", _time);
+            _material.SetFloat("_Phase", _phase);
+            _material.SetFloat("_Transition", _transition);
+
+            _material.SetVector("_Params1", new Vector4(
+                _randomParams[0],
+                _randomParams[1],
+                _randomParams[2],
+                _randomParams[3]
+            ));
+
+            _material.SetVector("_Params2", new Vector4(
+                _randomParams[4],
+                _randomParams[5],
+                _randomParams[6],
+                _randomParams[7]
+            ));
 
             Graphics.DrawMesh(
                 _mesh.sharedMesh, transform.localToWorldMatrix, _material,
                 gameObject.layer
             );
+
+            _time += Time.deltaTime;
         }
+
+        #endregion
     }
 }

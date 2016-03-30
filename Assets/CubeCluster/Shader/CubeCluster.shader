@@ -26,10 +26,15 @@
         float _Size;
         float _TextureScale;
 
-        float4 _Switch1;
-        float4 _Switch2;
+        float _RTime;
+        float _Phase;
+        float _Transition;
 
-        struct Input {
+        float4 _Params1;
+        float4 _Params2;
+
+        struct Input
+        {
             float2 uv_MainTex;
             float4 color : COLOR;
         };
@@ -85,14 +90,14 @@
             float3 uvw = v.texcoord1.xyz;
             float id = dot(uvw, float3(24.13, 5.87, 1)) / 30;
 
-            float time = frac(_Time.y / kCycle);  // base time
-            time *= 1 + kTransition * 2 / kCycle; // make transition margin
-            time -= id * kTransition / kCycle;    // bias with object id
-            time = saturate(time);                // clamp with 0-1
+            float phase = _Phase;
+            phase *= 1 + _Transition * 2; // make transition margin
+            phase -= id * _Transition;    // bias with object id
+            phase = saturate(phase);      // clamp with 0-1
 
             const float eps = 1e-5;
-            float dft1 = pow(max(eps, 1 - sin(time * UNITY_PI)), 2);
-            float dft2 = pow(max(eps, 1 - sin(time * UNITY_PI)), 9);
+            float dft1 = pow(max(eps, 1 - sin(phase * UNITY_PI)), 2);
+            float dft2 = pow(max(eps, 1 - sin(phase * UNITY_PI)), 9);
 
             // base animations
             float3 offs = _Size * 0.5 + uvw - 0.5;
@@ -100,42 +105,42 @@
             float4 rot = float4(0, 0, 0, 1);
 
             {
-                float dft = (1 - dft1) * (_Switch1.x > 0.9);
-                float3 crd = uvw * 1.6 + float3(0, 0, _Time.y) * 1.2;
+                float dft = (1 - dft1) * (_Params1.x > 0.9);
+                float3 crd = uvw * 1.6 + float3(0, 0, _RTime) * 1.2;
                 scale *= 1 + snoise(crd) * 0.4 * dft;
             }
             {
-                float dft = (1 - dft1) * (_Switch1.y > 0.9);
-                float3 crd = uvw * 1.4 + float3(0, 0, _Time.y) * 0.5;
+                float dft = (1 - dft1) * (_Params1.y > 0.9);
+                float3 crd = uvw * 1.4 + float3(0, 0, _RTime) * 0.5;
                 offs += snoise_grad(crd) * 0.02 * dft;
             }
             {
-                float dft = (1 - dft1) * (_Switch1.z > 0.9);
+                float dft = (1 - dft1) * (_Params1.z > 0.9);
                 float3 axis = random_point_on_sphere(id, 0);
                 float angle = UVRand(id, 1) * 3 + 1;
                 rot = qmul(rot, rotation_angle_axis(angle * dft, axis));
             }
             {
-                float dft = (1 - dft1) * (_Switch1.w > 0.9);
+                float dft = (1 - dft1) * (_Params1.w > 0.9);
                 float3 axis = random_point_on_sphere(id, 13);
-                float angle = snoise(uvw * 0.3 + float3(_Time.y * 0.3, 0, 0)) * 5;
+                float angle = snoise(uvw * 0.3 + float3(_RTime * 0.3, 0, 0)) * 5;
                 rot = qmul(rot, rotation_angle_axis(angle * dft, axis));
             }
             {
-                float dft = saturate(_Switch1.x - dft1);
+                float dft = saturate(_Params1.x - dft1);
                 float3 pt = float3(UVRand(id, 6), UVRand(id, 7), UVRand(id, 8));
                 offs = lerp(offs, pt * 0.8 - 0.4, dft);
             }
             {
-                float dft = saturate(_Switch1.y - dft1);
+                float dft = saturate(_Params1.y - dft1);
                 float3 orbit = float3(UVRand(id, 2), UVRand(id, 3), UVRand(id, 4));
-                orbit = sin((orbit + 1) * (_Time.y + 13)) * 0.4;
+                orbit = sin((orbit + 1) * (_RTime + 13)) * 0.4;
                 offs = lerp(offs, orbit, dft);
             }
             {
-                float dft = saturate(_Switch1.z - dft1);
+                float dft = saturate(_Params1.z - dft1);
                 float sn, cs;
-                float r = _Time.y * (0.5 + UVRand(id, 12) * 2);
+                float r = _RTime * (0.5 + UVRand(id, 12) * 2);
                 sincos(r, sn, cs);
                 float3 pt = float3(offs.x, offs.y * cs - offs.z * sn, offs.y * sn + offs.z * cs);
                 offs = lerp(offs, pt, dft);
