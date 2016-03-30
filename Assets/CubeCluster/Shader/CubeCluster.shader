@@ -26,6 +26,9 @@
         float _Size;
         float _TextureScale;
 
+        float4 _Switch1;
+        float4 _Switch2;
+
         struct Input {
             float2 uv_MainTex;
             float4 color : COLOR;
@@ -87,61 +90,67 @@
             time -= id * kTransition / kCycle;    // bias with object id
             time = saturate(time);                // clamp with 0-1
 
-            float dft1 = pow(1 - sin(time * UNITY_PI), 2);
-            float dft2 = pow(1 - sin(time * UNITY_PI), 9);
+            const float eps = 1e-5;
+            float dft1 = pow(max(eps, 1 - sin(time * UNITY_PI)), 2);
+            float dft2 = pow(max(eps, 1 - sin(time * UNITY_PI)), 9);
 
+            // base animations
             float3 offs = _Size * 0.5 + uvw - 0.5;
             float scale = (dft2 + 1) / 2 * _Size;
+            float4 rot = float4(0, 0, 0, 1);
 
-            float3 raxis = random_point_on_sphere(id, 0);
-            float angle = UVRand(id, 1) * 3 + 1;
-            float4 rot = rotation_angle_axis((1 - dft1) * angle, raxis);
+            {
+                float dft = (1 - dft1) * (_Switch1.x > 0.9);
+                float3 crd = uvw * 1.6 + float3(0, 0, _Time.y) * 1.2;
+                scale *= 1 + snoise(crd) * 0.4 * dft;
+            }
+            {
+                float dft = (1 - dft1) * (_Switch1.y > 0.9);
+                float3 crd = uvw * 1.4 + float3(0, 0, _Time.y) * 0.5;
+                offs += snoise_grad(crd) * 0.02 * dft;
+            }
+            {
+                float dft = (1 - dft1) * (_Switch1.z > 0.9);
+                float3 axis = random_point_on_sphere(id, 0);
+                float angle = UVRand(id, 1) * 3 + 1;
+                rot = qmul(rot, rotation_angle_axis(angle * dft, axis));
+            }
+            {
+                float dft = (1 - dft1) * (_Switch1.w > 0.9);
+                float3 axis = random_point_on_sphere(id, 13);
+                float angle = snoise(uvw * 0.3 + float3(_Time.y * 0.3, 0, 0)) * 5;
+                rot = qmul(rot, rotation_angle_axis(angle * dft, axis));
+            }
+            {
+                float dft = saturate(_Switch1.x - dft1);
+                float3 pt = float3(UVRand(id, 6), UVRand(id, 7), UVRand(id, 8));
+                offs = lerp(offs, pt * 0.8 - 0.4, dft);
+            }
+            {
+                float dft = saturate(_Switch1.y - dft1);
+                float3 orbit = float3(UVRand(id, 2), UVRand(id, 3), UVRand(id, 4));
+                orbit = sin((orbit + 1) * (_Time.y + 13)) * 0.4;
+                offs = lerp(offs, orbit, dft);
+            }
+            {
+                float dft = saturate(_Switch1.z - dft1);
+                float sn, cs;
+                float r = _Time.y * (0.5 + UVRand(id, 12) * 2);
+                sincos(r, sn, cs);
+                float3 pt = float3(offs.x, offs.y * cs - offs.z * sn, offs.y * sn + offs.z * cs);
+                offs = lerp(offs, pt, dft);
+                rot = lerp(rot, qmul(rot, rotation_angle_axis(r, float3(1, 0, 0))), dft);
+                rot = normalize(rot);
+            }
 
-            float3 orbit = float3(UVRand(id, 2), UVRand(id, 3), UVRand(id, 4));
-            orbit = sin((orbit + 1) * (_Time.y + 13)) * 0.4;
-
-            offs = lerp(orbit, offs, dft1);
-
+            // apply modification
             v.vertex.xyz = rotate_vector(vpos, rot) * scale + offs;
             v.normal = rotate_vector(v.normal, rot);
             v.color = dft2 * float4(3, 1.2, 1, 0);
 
-            /*
-            float ratio = pow(abs(sin(_Time.x * 4 + (uvw.x * 25 + uvw.y * 16 - uvw.z) * 0.04)), 2);
-
-            v.color = saturate(1 - ratio * float4(3, 4.5, 5, 1)) * 2;
-
-            float2 r_uv = uvw.xy + uvw.z * 0.1;
-            float3 offs2 = float3(
-                sin(_Time.y * (1 + UVRand(r_uv))),
-                sin(_Time.y * (1 + UVRand(r_uv + 1))),
-                sin(_Time.y * (1 + UVRand(r_uv + 2)))
-            ) * 0.4;
-
-            // base position
-            float3 offs = _Size * 0.5 + uvw - 0.5;
-
-            offs *= 1 - pow(ratio, 3) * 0.4;
-
-            //offs = rotate_vector(offs, rotation_angle_axis(_Time.y, float3(0, 1, 0)));
-            offs = lerp(offs, offs2, ratio);
-
-            // rotation
-            float3 rnoise = uvw + float3(23.1, 38.4, 15.3);
-            rnoise += _Time.y * 0.2;
-            float rangle = snoise(rnoise) * ratio;
-            float4 rotation = rotation_angle_axis(rangle, random_point_on_sphere(uvw.xy + uvw.z));
-
-            // scale
-            float3 sn = uvw * 0.8 + float3(_Time.y, 0, 0);
-            float scale = _Size * lerp(1, saturate(0.5 + snoise(sn) * 0.6), ratio);
-
-            v.vertex.xyz = rotate_vector(vpos, rotation) * scale + offs;
-            v.normal = rotate_vector(v.normal, rotation);
-
-            v.texcoord.xy = v.texcoord.xy * _TextureScale;
-            v.texcoord.xy += float2(UVRand(uvw.xy + uvw.z), UVRand(uvw.yz + uvw.x));
-            */
+            // texture coordnate
+            v.texcoord.xy *= _TextureScale;
+            v.texcoord.xy += float2(UVRand(id, 30), UVRand(id, 31));
         }
 
         void surf(Input IN, inout SurfaceOutputStandard o)

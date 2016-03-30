@@ -26,6 +26,20 @@ namespace UnityLogo
 
         Material _material;
 
+        Vector4 _switch1;
+        Vector4 _switch2;
+
+        Vector4 RandomBinaryVector {
+            get {
+                return new Vector4(
+                    Random.value > 0.5f ? 1 : 0,
+                    Random.value > 0.5f ? 1 : 0,
+                    Random.value > 0.5f ? 1 : 0,
+                    Random.value > 0.5f ? 1 : 0
+                );
+            }
+        }
+
         void OnEnable()
         {
             _material = new Material(Shader.Find("UnityLogo/CubeCluster"));
@@ -38,6 +52,16 @@ namespace UnityLogo
             _material = null;
         }
 
+        IEnumerator Start()
+        {
+            while (true)
+            {
+                _switch1 = RandomBinaryVector;
+                _switch2 = RandomBinaryVector;
+                yield return new WaitForSeconds(18);
+            }
+        }
+
         void Update()
         {
             _material.color = _color;
@@ -45,6 +69,9 @@ namespace UnityLogo
             _material.mainTexture = _metallicMap;
             _material.SetTexture("_BumpMap", _normalMap);
             _material.SetFloat("_TextureScale", _textureScale);
+
+            _material.SetVector("_Switch1", _switch1);
+            _material.SetVector("_Switch2", _switch2);
 
             Graphics.DrawMesh(
                 _mesh.sharedMesh, transform.localToWorldMatrix, _material,
